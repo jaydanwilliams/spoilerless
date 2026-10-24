@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 const ANILIST_URL = "https://graphql.anilist.co";
 
 export type AnimeSummary = {
@@ -71,3 +73,60 @@ export async function searchAnime(search: string, page = 1, perPage = 20): Promi
 
   return json.data.Page;
 }
+
+export type AnimeDetail = AnimeSummary & {
+  description: string | null;
+  genres: string[];
+  status: string | null;
+  bannerImage: string | null;
+};
+
+const DETAIL_QUERY = `
+  query ($id: Int) {
+    Media(id: $id, type: ANIME) {
+      id
+      title {
+        romaji
+        english
+      }
+      coverImage {
+        large
+      }
+      bannerImage
+      episodes
+      seasonYear
+      format
+      averageScore
+      description(asHtml: false)
+      genres
+      status
+    }
+  }
+`;
+
+export const getAnime = cache(async (id: number): Promise<AnimeDetail | null> => {
+  const res = await fetch(ANILIST_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({ query: DETAIL_QUERY, variables: { id } }),
+    next: { revalidate: 3600 },
+  });
+
+  // AniList answers 404 when no anime has this ID
+  if (res.status === 404) return null;
+
+  if (!res.ok) {
+    throw new Error(`AniList request failed with status ${res.status}`);
+  }
+
+  const json = await res.json();
+
+  if (json.errors) {
+    throw new Error(`AniList returned errors: ${JSON.stringify(json.errors)}`);
+  }
+
+  return json.data.Media;
+});
