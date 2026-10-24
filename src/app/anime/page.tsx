@@ -38,8 +38,8 @@ export default async function AnimePage({ searchParams }: Props) {
         <p className="mt-8 text-gray-500">No results for &ldquo;{q}&rdquo;.</p>
       ) : (
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
-          {media.map((anime) => (
-            <AnimeCard key={anime.id} anime={anime} />
+          {media.map((anime, index) => (
+            <AnimeCard key={anime.id} anime={anime} eager={index < 5} />
           ))}
         </div>
       )}

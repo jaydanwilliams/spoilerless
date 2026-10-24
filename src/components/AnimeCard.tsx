@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { AnimeSummary } from "@/lib/anilist";
 
-export function AnimeCard({ anime }: { anime: AnimeSummary }) {
+export function AnimeCard({ anime, eager = false }: { anime: AnimeSummary; eager?: boolean }) {
   const title = anime.title.english ?? anime.title.romaji;
 
   return (
@@ -13,6 +13,7 @@ export function AnimeCard({ anime }: { anime: AnimeSummary }) {
             src={anime.coverImage.large}
             alt={title}
             fill
+            loading={eager ? "eager" : undefined}
             sizes="(max-width: 768px) 50vw, 200px"
             className="object-cover transition group-hover:scale-105"
           />
